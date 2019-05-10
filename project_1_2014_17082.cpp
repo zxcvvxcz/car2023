@@ -26,7 +26,7 @@ using std::runtime_error;
 class EnergyZeroException : public runtime_error
 {
 public:
-    EnergyZeroException() : runtime_error("Energy Faiulre") {}
+    EnergyZeroException() : runtime_error("Energy Failure") {}
 };
 
 class OxygenZeroException : public runtime_error
@@ -68,8 +68,8 @@ public:
     void addDistance(int);
     static void setUnits(int);
     static void setPanelStatus(bool);
-    virtual string name() {return "not defined";}
-    virtual void move(string)=0;
+    virtual string name() = 0;
+    virtual void move(string) = 0;
     virtual void print(int) = 0;
     void finalPrint();
     void initialPrint();
@@ -221,7 +221,7 @@ class Car : public Vehicle
 public:
     Car(const Vehicle &, int temperature, int humidity, int length, int energy);
     Car(int newTemperature, int newLength, int newHumidity, int newEnergy);
-    virtual void move(string mode) throw(EnergyZeroException, OxygenZeroException, VehicleStopException);
+    virtual void move(string mode) throw (EnergyZeroException, OxygenZeroException, VehicleStopException);
     virtual void print(int);
     virtual string name() {return "Car";}
     void solarPanelRecharge();
@@ -231,6 +231,7 @@ Car::Car(const Vehicle &v, int newTemperature, int newHumidity, int newLength, i
     setAltitude(0);
     setFlowDensity(100);
     setOxygenRate(100);
+    setSpeed(80);
     setTemperature(newTemperature);
     setHumidity(newHumidity);
     if(newHumidity < 50)
@@ -251,7 +252,7 @@ void Car::solarPanelRecharge()
         setEnergy(1000);
     }
 }
-void Car::move(string mode) throw(EnergyZeroException, OxygenZeroException, VehicleStopException)
+void Car::move(string mode) throw (EnergyZeroException, OxygenZeroException, VehicleStopException)
 {
     bool mode2=(mode.compare("2") == 0) ? true : false;
     int tempDistance = 0;
@@ -277,7 +278,7 @@ void Car::move(string mode) throw(EnergyZeroException, OxygenZeroException, Vehi
             setEnergy(0);
             break;
         }
-    } while (mode2 && getDistance()+tempDistance < getLength());
+    } while (mode2 && getDistance() + tempDistance < getLength());
 
     addDistance(tempDistance);
     if (getEnergy() == 0)
@@ -300,7 +301,6 @@ class Airplane : public Vehicle
 {
 public:
     Airplane(const Vehicle &, int temperature, int humidity, int altitude, int airDensity, int length);
-    Airplane(int temperature, int humidity, int altitude, int airDensity, int length);
     virtual void move(string mode) throw(EnergyZeroException, OxygenZeroException, VehicleStopException);
     virtual void print(int tempDistance);
     virtual string name() {return "Airplane";}
@@ -317,12 +317,8 @@ Airplane::Airplane(const Vehicle &v, int temperature, int humidity, int altitude
     setFlowDensity(airDensity);
     setSpeed(900);
 }
-Airplane::Airplane(int temperature, int humidity, int altitude, int airDensity, int length)
-    : Vehicle(900, temperature, getEnergy(), humidity, getOxygenRate(), airDensity, altitude, length)
-{
-}
 
-void Airplane::move(string mode) throw(EnergyZeroException, OxygenZeroException, VehicleStopException)
+void Airplane::move(string mode) throw (EnergyZeroException, OxygenZeroException, VehicleStopException)
 {
     bool mode2 = mode.compare("2") == 0 ? true : false;
     int tempDistance=0;
@@ -415,7 +411,7 @@ void Submarine::light()
 void Submarine::move(string mode) throw(EnergyZeroException, OxygenZeroException, VehicleStopException)
 {
     bool mode2=mode.compare("2") == 0 ? true : false;
-    int tempDistance=0;
+    int tempDistance = 0;
     bool stop = false;
     do
     {
@@ -452,7 +448,7 @@ void Submarine::move(string mode) throw(EnergyZeroException, OxygenZeroException
         setUnits(getUnits() + 1);
         if (getDistance() + tempDistance >= getLength())
             stop = true;
-    } while (mode2 && !stop);
+    } while (mode2 && !stop); 
     addDistance(tempDistance);
     if (getEnergy() == 0)
         throw EnergyZeroException();
@@ -493,10 +489,10 @@ private:
     string energyLevel = "Energy Level: ";
     string oxygenLevel = "Oxygen Level: ";
     string speed = "Speed: ";
-    string recentMode="";
-    string recentEnergy="";
-    string recentOxygen="";
-    string recentSpeed="";
+    string recentMode = "";
+    string recentEnergy = "";
+    string recentOxygen = "";
+    string recentSpeed = "";
 };
 
 void BlackBox::print()
@@ -510,7 +506,7 @@ void BlackBox::print()
 }
 void BlackBox::recordEnergy(int energy)
 {
-    string stringEnergy=to_string(energy);
+    string stringEnergy = to_string(energy);
     if (stringEnergy.compare(recentEnergy) != 0)
     {
         if(energyLevel.compare("Energy Level: ") == 0)
@@ -529,7 +525,7 @@ void BlackBox::recordMode(string newMode)
             mode += newMode + " ";
         else 
             mode += "> " + newMode + " ";
-        recentMode=newMode;
+        recentMode = newMode;
     }        
 }
 void BlackBox::recordOxygen(int oxygenRate)
@@ -558,89 +554,109 @@ void BlackBox::recordSpeed(int newSpeed)
 }
 
 vector<char *> textVector(int);
-Vehicle *initialVehicle( vector<char *>, BlackBox&);
-Vehicle *vehicleType( vector<char *> , int, BlackBox&, Vehicle*);
-void checkXY(vector<char*> , int, Vehicle*) throw (VehicleStopException);
-void graphic(vector<char *> , int);
+Vehicle *initialVehicle(vector<char *>, BlackBox&);
+Vehicle *vehicleType(vector<char *> , int, BlackBox&, Vehicle*);
+int checkXY(vector<char*> , int, Vehicle*) throw (VehicleStopException);
+string graphic(vector<char *> , int);
 int getRandomNumber(int);
 int main()
 {
-    std::srand(static_cast<unsigned int>(std::time(0))); 
-    
+    cout << "PJ1.P C H.2014-17082" << endl;
+    cout << "Mode Select(1 for EXTRA, 2 for NORMAL) :";
+    int includeXY;
+    cin >> includeXY;
+        
+    std::srand(static_cast<unsigned int>(std::time(0)));    
     while (true)
     {
         Vehicle::setPanelStatus(false);
-        int includeXY;
-        cout << "Mode Select(1 for EXTRA, 2 for NORMAL) :";
-        cin >> includeXY;
         BlackBox blackbox;
         Vehicle::setUnits(0);
-        cout << "PJ1.P C H.2014-17082" << endl;
         cout << "Choose the number of the test case (1~10) : ";
         int testNum;
         cin >> testNum;
-        Vehicle* myVehicle = NULL;
-        if(testNum == 0) {
+        if(testNum == 0) 
             return 0;
-        }
         cout << "Test case #" << testNum << "." << endl;
-        
+
+        Vehicle* myVehicle = NULL;
         myVehicle = initialVehicle(textVector(testNum), blackbox);
-        myVehicle->initialPrint();
-        graphic(textVector(testNum), 0);
+        myVehicle -> initialPrint();
+        cout << graphic(textVector(testNum), 0) << endl;
         cout << "Next Move? (1,2)" << endl;
         cout << "CP-2014-17082>";
         string mode;
         getline(cin, mode);
-        while (mode.compare("1")!=0 && mode.compare("2") != 0)
+        while (mode.compare("1") != 0 && mode.compare("2") != 0)
         {
-            getline(cin,mode);
+            getline(cin, mode);
         }
         try
         {
-            for (int i = 0; i < textVector(testNum).size(); i++)
+            int i = 0;
+            for (; i < textVector(testNum).size(); i++)
             {
+                string currentJourney;
                 myVehicle = vehicleType(textVector(testNum), i, blackbox, myVehicle);
-                do
+                while (myVehicle -> getDistance() < myVehicle -> getLength())
                 {
                     myVehicle -> move(mode);
-                    graphic(textVector(testNum), Vehicle::getUnits());
-                    if(includeXY == 1)
-                    {
-                        checkXY(textVector(testNum), i, myVehicle);
-                    }
+                    currentJourney = graphic(textVector(testNum), Vehicle::getUnits());
+                    if(currentJourney.at(currentJourney.length() - 2) == '@')
+                        break;
+                    cout << currentJourney << endl;
                     cout << "Next Move? (1,2)" << endl;
                     cout << "CP-2014-17082>";
                     getline(cin, mode);
                     while (mode.compare("1") != 0 && mode.compare("2") != 0)
                     {
                         cout << "CP-2014-17082>";
-                        getline(cin,mode);
+                        getline(cin, mode);
                     }
-                } while (myVehicle->getDistance() < myVehicle->getLength());
+                }
                 blackbox.record(*myVehicle);
+                if(includeXY == 1)
+                    {
+                        i += checkXY(textVector(testNum), i + 1, myVehicle);
+                    }
             }
-            myVehicle->finalPrint();
+            myVehicle -> finalPrint();
+            cout << graphic(textVector(testNum), Vehicle::getUnits()) << endl;
             cout << "!Finished : Arrived" << endl;
         }
         catch (const EnergyZeroException &e)
         {
             myVehicle->finalPrint();
-            cout << "!Finished : " << e.what() << endl;
+            string entireJourney = graphic(textVector(testNum), Vehicle::getUnits());
+            cout << entireJourney << endl;
+            if(entireJourney.at(entireJourney.length() - 2) == '@')
+                cout << "!Finished : Arrived" << endl;
+            else
+                cout << "!Finished : " << e.what() << endl;
         }
         catch (const OxygenZeroException &e)
         {
             myVehicle->finalPrint();
-            cout << "!Finished : " << e.what() << endl;
+            string entireJourney = graphic(textVector(testNum), Vehicle::getUnits());
+            cout << entireJourney << endl;
+            if(entireJourney.at(entireJourney.length() - 2) == '@')
+                cout << "!Finished : Arrived" << endl;
+            else
+                cout << "!Finished : " << e.what() << endl;
         }
         catch (const VehicleStopException &e)
         {
             myVehicle->finalPrint();
-            cout << "!Finished : " << e.what() << endl;
+            string entireJourney = graphic(textVector(testNum), Vehicle::getUnits());
+            cout << entireJourney << endl;
+            if(entireJourney.at(entireJourney.length() - 2) == '@')
+                cout << "!Finished : Arrived" << endl;
+            else
+                cout << "!Finished : " << e.what() << endl;
         }
         blackbox.record(*myVehicle);
         blackbox.print();
-        if(includeXY == 1) break;
+        delete myVehicle;
     }
     return 0;
 }
@@ -651,20 +667,20 @@ vector<char *> textVector(int num)
     const char *delimiter = ",";
     vector<char *> a;
 
-    string tc[10];
-    tc[0]="[R200T25H10],[S2000T20H0A1000D20],[O30T10D500W100]";
-    tc[1]="[R200T25H10],[X],[Y],[S2000T20H0A1000D20],[X],[O30T10D500W100]";
-    tc[2]="";
-    tc[3]="";
-    tc[4]="[R500T20H20],[S3000T10H5A2000D30],[O80T0D100W100]";
-    tc[5]="";
-    tc[6]="";
-    tc[7]="";
-    tc[8]="";
-    tc[9]="";
-    string str=tc[num-1];
+    string TC[10];
+    TC[0] = "[R200T25H10],[S2000T20H0A1000D20],[O30T10D500W0]";
+    TC[1] = "[R200T0H0],[X],[Y],[S2000T0H60A1000D70],[X],[O30T10D200W10]";
+    TC[2] = "[R50T20H30],[S3000T40H5A2000D20],[X],[O80T0D100W100],[R150T30H50]";
+    TC[3] = "[R4000T10H10],[O10T0D100W10],[Y],[R200T60H100]";
+    TC[4] = "[R500T20H20],[S3000T10H5A2000D50],[O80T0D100W100]";
+    TC[5] = "[R5000T10H10]";
+    TC[6] = "[R50T10H10],[Y],[S4000T10H5A2000D72],[R50T10H10],[O100T0D100W100],[R50T10H60]";
+    TC[7] = "[R2500T45H50],[S4000T10H5A2000D100],[O20T0D100W100]";
+    TC[8] = "[R2500T45H50],[S4000T10H5A2000D100],[O40T0D100W100]";
+    TC[9] = "[R3400T10H10],[S3000T10H5A2000D52],[Y],[O10T0D100W10]";
+    string str = TC[num - 1];
     char cstr[2000];
-    strcpy(cstr,str.c_str());
+    strcpy(cstr, str.c_str());
     pch = strtok(cstr, delimiter);
     while (pch != NULL)
     {
@@ -676,22 +692,23 @@ vector<char *> textVector(int num)
 
 Vehicle *initialVehicle(vector<char *> a, BlackBox& blackbox)
 {
-    Vehicle *newVehicle=NULL;
+    Vehicle *newVehicle = NULL;
     char *strsub = new char[2000];
     strcpy(strsub, a.at(0));
-    const char *delimiterSub= "[]RTH";
+    const char *delimiterSub = "[]RTH";
     
     char *pchsub;
     char* b[5];
     pchsub = strtok(strsub, delimiterSub);
-    int j=0;
+    int j = 0;
     while (pchsub != NULL)
     {
-        b[j]=pchsub;
+        b[j] = pchsub;
         j++;
         pchsub = strtok(NULL, delimiterSub);
     }
     newVehicle = new Car(atoi(b[1]), 0, atoi(b[2]));
+    delete[] strsub;
     return newVehicle;
 }
 Vehicle *vehicleType(vector<char *> a, int i, BlackBox& blackbox,Vehicle *v)
@@ -699,7 +716,7 @@ Vehicle *vehicleType(vector<char *> a, int i, BlackBox& blackbox,Vehicle *v)
     Vehicle *newVehicle=NULL;
     char *strsub = new char[2000];
     strcpy(strsub, a.at(i));
-    const char *delimiterSub=NULL;
+    const char *delimiterSub = NULL;
     char roadCondition = strsub[1];
     if (roadCondition == 'R')
        delimiterSub = "[]RTH";
@@ -707,14 +724,15 @@ Vehicle *vehicleType(vector<char *> a, int i, BlackBox& blackbox,Vehicle *v)
         delimiterSub = "[]STHAD";
     else if (roadCondition == 'O')
         delimiterSub = "[]OTDW";
-    
+    else
+        return v;
     char *pchsub;
     char* b[5];
     pchsub = strtok(strsub, delimiterSub);
-    int j=0;
+    int j = 0;
     while (pchsub != NULL)
     {
-        b[j]=(pchsub);
+        b[j] = (pchsub);
         j++;
         pchsub = strtok(NULL, delimiterSub);
     }
@@ -749,84 +767,98 @@ Vehicle *vehicleType(vector<char *> a, int i, BlackBox& blackbox,Vehicle *v)
         newVehicle = new Submarine(*v, length, temperature, altitude, flowDensity);
         blackbox.recordMode("Submarine");
         break;
+    default:
+        newVehicle = v;
     }
     delete v;
+    delete[] strsub;
     return newVehicle;
 }
 
-void graphic(vector<char *> a, int units)
+string graphic(vector<char *> a, int units)
 {
 	string roadGraphic = "";
     int j = 0;
 	for (int i = 0; i < a.size(); i++)
 	{
-		char *tc = new char[2000];
-		strcpy(tc, a.at(i));
+		char* tempTc = new char[2000];
+		strcpy(tempTc, a.at(i));
 		const char *delimiterSub = NULL;
 		int unit;
 		char roadSign;
-		if (tc[1] == 'R')
+		if (tempTc[1] == 'R')
 		{
 			delimiterSub = "RT";
 			unit = 50;
 			roadSign = '=';
 		}
-		else if (*(tc + 1) == 'S')
+		else if (*(tempTc + 1) == 'S')
 		{
 			delimiterSub = "ST";
 			unit = 1000;
 			roadSign = '^';
 		}
-		else if (*(tc + 1) == 'O')
+		else if (*(tempTc + 1) == 'O')
 		{
 			delimiterSub = "OT";
 			unit = 10;
 			roadSign = '~';
 		}
-		char *pchsub = strtok(tc, delimiterSub);
+        else
+            continue;
+		char *pchsub = strtok(tempTc, delimiterSub);
 		pchsub = strtok(NULL, delimiterSub);
 		int roadNum = atoi(pchsub);
-        int tempj=j;
+        int tempj = j;
 		for (; j - tempj < roadNum / unit; j++)
 		{
-			if (j == units - 1)
+			if (j == units)
 				roadGraphic += '@';
-			else
-				roadGraphic += roadSign;
+			roadGraphic += roadSign;
 		}
+        delete[] tempTc;
 	}
-	cout << "|" << roadGraphic << "|" << endl;
+    if (j == units)
+        roadGraphic += '@';
+	return "|" + roadGraphic + "|";
 }
-
-
 int getRandomNumber(int max)
 {
     return static_cast<int>(max*rand()/(RAND_MAX+1.0));
 }
-void checkXY(vector<char*> a, int i, Vehicle* myVehicle) throw (VehicleStopException)
+int checkXY(vector<char*> a, int i, Vehicle* myVehicle) throw (VehicleStopException)
 {
-    char *strsub = a.at(i+1);
-
-    if (strsub[1] == 'X')
+    int situations = 0;
+    while(a.size() > i + situations)
     {
-        int x=getRandomNumber(10);
-        if(x<=2)
-            throw VehicleStopException();
-        else
-            myVehicle->setEnergy(myVehicle->getEnergy()-100);
-    }
-    
-    else if (*(strsub + 1) == 'Y')
-    {
-        int y=getRandomNumber(1000);
-        if(y<=350)
-            throw VehicleStopException();
-        else if(y>675)
+        char *strsub = a.at(i + situations);
+        if (strsub[1] == 'X')
         {
-            if(myVehicle->name().compare("Car")==0)
-                Vehicle::setPanelStatus(true);
+            int x = getRandomNumber(10);
+            if (x <= 2)
+                throw VehicleStopException();
             else
-                myVehicle->setOxygenRate(myVehicle->getOxygenRate()-30);
+                myVehicle->setEnergy(myVehicle -> getEnergy() - 100);
+            situations++;
+            continue;
         }
+
+        else if (*(strsub + 1) == 'Y')
+        {
+            int y = getRandomNumber(1000);
+            if (y <= 350)
+                throw VehicleStopException();
+            else if (y > 675)
+            {
+                if (myVehicle -> name().compare("Car") == 0)
+                    Vehicle::setPanelStatus(true);
+                else
+                    myVehicle -> setOxygenRate(myVehicle->getOxygenRate() - 30);
+            }
+            situations++;
+            continue;
+        }
+        break;
     }
+    return situations;
 }
